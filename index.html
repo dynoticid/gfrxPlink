@@ -85,6 +85,12 @@ th{
 .status-process .dot { color: #ffea00; }   
 .status-rejected .dot { color: #ff0033; }  
 
+.smartlink-text{
+  font-weight:600;
+  color:#39f;
+  text-decoration:underline;
+}
+
 footer{
   margin-top:20px;
   color:rgba(255,255,255,0.6);
@@ -111,17 +117,16 @@ footer{
         <th>Smartlink</th>
       </tr>
     </thead>
-    <tbody id="table-body">
-      <!-- Data akan diisi oleh JS -->
-    </tbody>
+    <tbody id="table-body"></tbody>
   </table>
 </div>
 
 <footer>© 2025 Dynotic ID</footer>
 
 <script>
-// Lagu tunggal
+// Data lagu
 const songs = [
+  {title:"Shympony Night", status:"process", smartlink:""},
   {title:"じゃ, いク!", status:"approve", smartlink:"https://fanlink.tv/wNFg"}
 ];
 
@@ -129,11 +134,14 @@ function renderTable(){
   const tableBody = document.getElementById("table-body");
   tableBody.innerHTML = "";
   songs.forEach(song=>{
+    const smartlinkDisplay = song.smartlink 
+      ? `<a href="${song.smartlink}" target="_blank" class='smartlink-text'>Link</a>` 
+      : "";
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${song.title}</td>
       <td><span class="status-text status-${song.status}">${song.status.charAt(0).toUpperCase() + song.status.slice(1)}<span class="dot">•</span></span></td>
-      <td><a href="${song.smartlink}" target="_blank" style="color:#39f;font-weight:600;text-decoration:underline;">Link</a></td>
+      <td>${smartlinkDisplay}</td>
     `;
     tableBody.appendChild(row);
   });

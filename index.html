@@ -44,6 +44,27 @@ h1{
 .back-btn:hover{
   background: rgba(255,255,255,0.12);
 }
+.search-box{
+  margin-bottom:20px;
+  width:100%;
+  max-width:650px;
+}
+.search-box input{
+  width:100%;
+  padding:10px 14px;
+  border-radius:14px;
+  border:none;
+  outline:none;
+  font-size:1rem;
+  background: rgba(255,255,255,0.1);
+  color:#fff;
+}
+.search-box input::placeholder{
+  color:rgba(255,255,255,0.7);
+}
+.search-box input:focus{
+  background: rgba(255,255,255,0.2);
+}
 .card{
   width:100%;
   max-width:650px;
@@ -81,7 +102,6 @@ th{
   font-size:1.2rem;
 }
 .status-approve .dot { color: #39ff14; }   
-.status-takedown .dot { color: #ff8c00; } 
 .status-process .dot { color: #ffea00; }   
 .status-rejected .dot { color: #ff0033; }  
 
@@ -91,6 +111,36 @@ th{
   text-decoration:underline;
 }
 
+.pagination {
+  margin-top:20px;
+  display:flex;
+  justify-content:center;
+  gap:12px;
+}
+.page-btn {
+  cursor:pointer;
+  padding:8px 18px;
+  border-radius:14px;
+  background: rgba(255,255,255,0.2);
+  color:#fff;
+  font-weight:600;
+  border:1px solid rgba(255,255,255,0.3);
+  box-shadow:0 0 10px rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
+}
+.page-btn:hover {
+  background: rgba(255,255,255,0.35);
+  box-shadow: 0 0 15px rgba(255,255,255,0.3);
+  transform: scale(1.05);
+}
+.page-btn:disabled {
+  opacity:0.4;
+  cursor:not-allowed;
+  background: rgba(255,255,255,0.1);
+  box-shadow: none;
+}
 footer{
   margin-top:20px;
   color:rgba(255,255,255,0.6);
@@ -108,6 +158,10 @@ footer{
 
 <a href="https://dynoticid.github.io/smartlink/" class="back-btn">Back to Artists</a>
 
+<div class="search-box">
+  <input type="text" id="search" placeholder="Cari lagu...">
+</div>
+
 <div class="card">
   <table>
     <thead>
@@ -119,33 +173,67 @@ footer{
     </thead>
     <tbody id="table-body"></tbody>
   </table>
+
+  <div class="pagination">
+    <button class="page-btn" id="prev">Prev</button>
+    <button class="page-btn" id="next">Next</button>
+  </div>
 </div>
 
 <footer>© 2025 Dynotic ID</footer>
 
 <script>
-// Data lagu
 const songs = [
-  {title:"Shympony Night", status:"process", smartlink:""},
-  {title:"じゃ, いク!", status:"approve", smartlink:"https://fanlink.tv/wNFg"}
+  {title:"Shympony Night", status:"process", link:null},
+  {title:"じゃ, いク!", status:"approve", link:"https://fanlink.tv/wNFg"}
 ];
+
+let filteredSongs = [...songs];
+let currentPage = 1;
+const rowsPerPage = 5;
 
 function renderTable(){
   const tableBody = document.getElementById("table-body");
   tableBody.innerHTML = "";
-  songs.forEach(song=>{
-    const smartlinkDisplay = song.smartlink 
-      ? `<a href="${song.smartlink}" target="_blank" class='smartlink-text'>Link</a>` 
-      : "";
+
+  const processSongs = filteredSongs.filter(s=>s.status==="process");
+  const otherSongs = filteredSongs.filter(s=>s.status!=="process");
+  const displaySongs = [...processSongs, ...otherSongs];
+
+  const start = (currentPage-1)*rowsPerPage;
+  const end = start + rowsPerPage;
+  const pageSongs = displaySongs.slice(start,end);
+
+  pageSongs.forEach(song=>{
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${song.title}</td>
-      <td><span class="status-text status-${song.status}">${song.status.charAt(0).toUpperCase() + song.status.slice(1)}<span class="dot">•</span></span></td>
-      <td>${smartlinkDisplay}</td>
+      <td><span class="status-text status-${song.status}">
+        ${song.status.charAt(0).toUpperCase() + song.status.slice(1)}
+        <span class="dot">•</span>
+      </span></td>
+      <td>${song.status==="approve" && song.link ? `<a href="${song.link}" target="_blank" class="smartlink-text">Link</a>` : "Not Available"}</td>
     `;
     tableBody.appendChild(row);
   });
+
+  document.getElementById("prev").disabled = currentPage===1;
+  document.getElementById("next").disabled = end>=displaySongs.length;
 }
+
+document.getElementById("prev").addEventListener("click", ()=>{
+  if(currentPage>1){ currentPage--; renderTable(); }
+});
+document.getElementById("next").addEventListener("click", ()=>{
+  if(currentPage*rowsPerPage<filteredSongs.length){ currentPage++; renderTable(); }
+});
+
+document.getElementById("search").addEventListener("input", (e)=>{
+  const keyword = e.target.value.toLowerCase();
+  filteredSongs = songs.filter(s=>s.title.toLowerCase().includes(keyword));
+  currentPage = 1;
+  renderTable();
+});
 
 renderTable();
 </script>
